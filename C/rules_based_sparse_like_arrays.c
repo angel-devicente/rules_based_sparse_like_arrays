@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <float.h>
+#include <time.h>
 #include "hdf5.h"
 #include "hdf5_hl.h"
 #include "rules_based_sparse_like_arrays.h"
@@ -248,3 +249,57 @@ double val_array(int i1, int i2, int i3, strip3D *A) {
 }
 
 
+int performance_rbsla(strip3D *A, int *dims, long nhits) {
+  double *A_d;
+  long idxm;
+  int *hits;
+  double sum;
+
+  // timing
+  clock_t t1,t2;
+  double cpu_time = 0.0;
+  
+  // First, let's create the dense array
+  A_d = (double*)malloc(sizeof(double) * (dims[0] * dims[1] * dims[2]));
+
+  idxm = 0;
+  for (int idx1 = 0 ; idx1 < dims[0] ; idx1++) {
+    for (int idx2 = 0 ; idx2 < dims[1] ; idx2++) {
+      for (int idx3 = 0 ; idx3 < dims[2] ; idx3++) {
+	//	printf("Writing: %d %d %d %d \n",idx1,idx2,idx3,idxm);
+	A_d[idxm++] = val_array(idx1,idx2,idx3,A);
+      }
+    }
+  }
+
+  // Let's create a list of random points to access in the array
+  hits = (int*)malloc(sizeof(int) * nhits * 3);
+  srand(time(NULL));   // Initialization, should only be called once.
+
+  for (long idx = 0 ; idx < nhits ; idx++) {
+    hits[3*idx]   = rand() % dims[0];
+    hits[3*idx+1] = rand() % dims[1];
+    hits[3*idx+2] = rand() % dims[2];
+  }
+
+
+  sum = 0;
+  t1 = clock();
+  for (long idx = 0 ; idx < nhits ; idx++) {
+    sum += A_d[hits[3*idx]*dims[1]*dims[2] + hits[3*idx+1]*dims[2] + hits[3*idx+2]];
+  }
+  t2 = clock(); cpu_time = t2-t1;
+  printf("Dense array sum: %10.6f (%f seconds)\n", sum, (double)cpu_time/CLOCKS_PER_SEC);
+
+
+  sum = 0;
+  t1 = clock();
+  for (long idx = 0 ; idx < nhits ; idx++) {
+    sum += val_array(hits[3*idx],hits[3*idx+1],hits[3*idx+2],A);
+  }
+  t2 = clock(); cpu_time = t2-t1;
+  printf("RBSLA array sum: %10.6f (%f seconds)\n\n", sum, (double)cpu_time/CLOCKS_PER_SEC);
+    
+
+  return 0;
+}

@@ -15,8 +15,8 @@ but many of the array positions have the same value, we might approach the
 storage of these arrays in a different way. This is what we do here for 3D
 arrays with what we call Rules Based Sparse Like Arrays, which in certain cases
 can be used to store the arrays (both in disk and in memory) in a much more
-compact way than its equivalent dense array representation (using orders of
-magnitude less space).
+compact way than its equivalent dense array representation (using *orders of
+magnitude less space and with no significant performance penalty*).
 
 (graphical explanation of the building up of the RBSLA to be added)
 
@@ -323,4 +323,42 @@ in this case, the rules-based representation can be done completely with rules).
 $ /usr/bin/time -f "%M" ./rbsla
 Reading dataset: cylinder
 35968
+#+END_SRC 
+
+*** Performance of RBSLA
+
+To find out the performance penalty incurred when using the RBSLA in-memory
+structure, compile and run the code as follows:
+
+#+BEGIN_SRC bash
+$ make clean
+$ make PP="-DPERF" 
+$ ./rbsla 
+#+END_SRC 
+
+In this mode, `rbsla` will read the rules-based files, store the data in the
+RBSLA in-memory structure and then create the equivalent in-memory dense array
+representation. Then, for each test, it will randomly select 100 million
+positions in the array and compute the sum of all those data points, timing
+it. As we can see below, for all the tests the "Dense" or "RBSLA" sum should be
+identical, and the penalty for storing these arrays as a RBSLA depends on the
+individual array and how they are repesented with the "d1" and "d2" rules. For
+these tests, the performance for RBSLA (as compared to a dense array
+representation) is: worse by ~2.5X in the Test #1; better by ~1.6X in Test #2;
+and about the same for Test #3.
+
+#+BEGIN_SRC bash
+$ ./rbsla
+## Starting Test #1. Dimensions: 4 100 100
+Dense array sum: 50012038.755090 (0.162883 seconds)
+RBSLA array sum: 50012038.755090 (0.405660 seconds)
+
+## Starting Test #2. Dimensions: 300 1200 400
+Dense array sum: 6326.568886 (1.514259 seconds)
+RBSLA array sum: 6326.568886 (0.938391 seconds)
+
+## Starting Test #3. Dimensions: 100 500 100
+Reading dataset: cylinder
+Dense array sum: 1307483.577778 (0.878563 seconds)
+RBSLA array sum: 1307483.577778 (0.797743 seconds)
 #+END_SRC 

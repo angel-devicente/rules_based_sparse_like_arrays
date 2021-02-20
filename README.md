@@ -1,22 +1,23 @@
 
 # Table of Contents
 
-1.  [Rules Based Sparse Like Arrays](#orgb2d119d)
-    1.  [Rules for 3D arrays](#orgbd2b2b0)
-        1.  [d1 rules](#orgc12786f)
-        2.  [d2 rules](#org43f3dc2)
-        3.  [Explicit data values](#org5a2119b)
-    2.  [Creating test arrays (\`Test\_Files/test.py\`)](#orgb689b6c)
-        1.  [Test 1](#org149a91d)
-        2.  [Test 2](#org146d050)
-        3.  [Test 3](#org41cee88)
-    3.  [In-memory RBSLA (C code)](#org8b97dec)
-        1.  [Verification of correct implementation.](#org88d9cb2)
-        2.  [Verification of reduced memory size of RBSLA in-memory structure](#org051f3b3)
+1.  [Rules Based Sparse Like Arrays](#org0c5a7b7)
+    1.  [Rules for 3D arrays](#orgc50c69c)
+        1.  [d1 rules](#org5055f31)
+        2.  [d2 rules](#org0731dc4)
+        3.  [Explicit data values](#orgc17f58c)
+    2.  [Creating test arrays (\`Test\_Files/test.py\`)](#org968dd0c)
+        1.  [Test 1](#org5fb2d92)
+        2.  [Test 2](#orgddd2505)
+        3.  [Test 3](#orgd6e7285)
+    3.  [In-memory RBSLA (C code)](#orga135372)
+        1.  [Verification of correct implementation.](#org7d3c268)
+        2.  [Verification of reduced memory size of RBSLA in-memory structure](#orgf25e5a4)
+        3.  [Performance of RBSLA](#org268da01)
 
 
 
-<a id="orgb2d119d"></a>
+<a id="org0c5a7b7"></a>
 
 # Rules Based Sparse Like Arrays
 
@@ -31,13 +32,13 @@ but many of the array positions have the same value, we might approach the
 storage of these arrays in a different way. This is what we do here for 3D
 arrays with what we call Rules Based Sparse Like Arrays, which in certain cases
 can be used to store the arrays (both in disk and in memory) in a much more
-compact way than its equivalent dense array representation (using orders of
-magnitude less space).
+compact way than its equivalent dense array representation (using **orders of
+magnitude less space and with no significant performance penalty**).
 
 (graphical explanation of the building up of the RBSLA to be added)
 
 
-<a id="orgbd2b2b0"></a>
+<a id="orgc50c69c"></a>
 
 ## Rules for 3D arrays
 
@@ -46,7 +47,7 @@ very simple. The test arrays created with the \`test.py\` script should help to
 clarify how these rules are used.
 
 
-<a id="orgc12786f"></a>
+<a id="org5055f31"></a>
 
 ### d1 rules
 
@@ -78,7 +79,7 @@ would be given by the d1 rules
     2 5 2.0
 
 
-<a id="org43f3dc2"></a>
+<a id="org0731dc4"></a>
 
 ### d2 rules
 
@@ -100,7 +101,7 @@ would be given by the d2 rules
     2 5 3 9 2.0
 
 
-<a id="org5a2119b"></a>
+<a id="orgc17f58c"></a>
 
 ### Explicit data values
 
@@ -109,7 +110,7 @@ as many dense sub-arrays as necessary, where we also specify the location where
 the sub-array fits in the main array. 
 
 
-<a id="orgb689b6c"></a>
+<a id="org968dd0c"></a>
 
 ## Creating test arrays (\`Test\_Files/test.py\`)
 
@@ -136,7 +137,7 @@ files (\`testX\_rules.h5\`) is much smaller than the "standard" files
     -rw-r--r-- 1 angelv angelv  39M Feb 19 19:04 test3_std.h5
 
 
-<a id="org149a91d"></a>
+<a id="org5fb2d92"></a>
 
 ### Test 1
 
@@ -194,7 +195,7 @@ standard file takes 322 KB.
 ![img](Test_Files/test1.png "Test 1")
 
 
-<a id="org146d050"></a>
+<a id="orgddd2505"></a>
 
 ### Test 2
 
@@ -212,7 +213,7 @@ compared to ~1 GB).
 ![img](Test_Files/test2.png "Test 2")
 
 
-<a id="org41cee88"></a>
+<a id="orgd6e7285"></a>
 
 ### Test 3
 
@@ -258,7 +259,7 @@ compared to 40 MB).
 ![img](Test_Files/test3.png "Test 3")
 
 
-<a id="org8b97dec"></a>
+<a id="orga135372"></a>
 
 ## In-memory RBSLA (C code)
 
@@ -266,7 +267,7 @@ In directory \`C\` we have the C code to read these rule-based arrays and create
 an efficient in-memory representation of these RBSLA arrays.
 
 
-<a id="org88d9cb2"></a>
+<a id="org7d3c268"></a>
 
 ### Verification of correct implementation.
 
@@ -296,7 +297,7 @@ array in memory, so if we profile the memory used by this code, we will not see
 the memory savings as compared to a standard dense array implementation.
 
 
-<a id="org051f3b3"></a>
+<a id="orgf25e5a4"></a>
 
 ### Verification of reduced memory size of RBSLA in-memory structure
 
@@ -328,4 +329,41 @@ in this case, the rules-based representation can be done completely with rules).
     $ /usr/bin/time -f "%M" ./rbsla
     Reading dataset: cylinder
     35968
+
+
+<a id="org268da01"></a>
+
+### Performance of RBSLA
+
+To find out the performance penalty incurred when using the RBSLA in-memory
+structure, compile and run the code as follows:
+
+    $ make clean
+    $ make PP="-DPERF" 
+    $ ./rbsla 
+
+In this mode, \`rbsla\` will read the rules-based files, store the data in the
+RBSLA in-memory structure and then create the equivalent in-memory dense array
+representation. Then, for each test, it will randomly select 100 million
+positions in the array and compute the sum of all those data points, timing
+it. As we can see below, for all the tests the "Dense" or "RBSLA" sum should be
+identical, and the penalty for storing these arrays as a RBSLA depends on the
+individual array and how they are repesented with the "d1" and "d2" rules. For
+these tests, the performance for RBSLA (as compared to a dense array
+representation) is: worse by ~2.5X in the Test #1; better by ~1.6X in Test #2;
+and about the same for Test #3.
+
+    $ ./rbsla
+    ## Starting Test #1. Dimensions: 4 100 100
+    Dense array sum: 50012038.755090 (0.162883 seconds)
+    RBSLA array sum: 50012038.755090 (0.405660 seconds)
+    
+    ## Starting Test #2. Dimensions: 300 1200 400
+    Dense array sum: 6326.568886 (1.514259 seconds)
+    RBSLA array sum: 6326.568886 (0.938391 seconds)
+    
+    ## Starting Test #3. Dimensions: 100 500 100
+    Reading dataset: cylinder
+    Dense array sum: 1307483.577778 (0.878563 seconds)
+    RBSLA array sum: 1307483.577778 (0.797743 seconds)
 

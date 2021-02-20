@@ -41,5 +41,6 @@ void get_dims_h5(hid_t f_id, rba *a);
 void get_rules(hid_t f_id, char *dname, rba *a);
 void populate_array(rba *Ar, strip3D *A, hid_t f_id);
 double val_array(int i1, int i2, int i3, strip3D *A);
+int performance_rbsla(strip3D *A, int *dims, long nhits);
 
 #endif
