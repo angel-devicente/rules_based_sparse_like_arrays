@@ -111,14 +111,18 @@ Creating rules-based file for test2 (300x1200x400)
 Creating starndard file for test2 (300x1200x400: 1098.63 MB)
 Creating rules-based file for test3 (100x500x100)
 Creating starndard file for test3 (100x500x100: 38.15 MB)
+Creating rules-based file for test4 (100x500x100)
+Creating starndard file for test4 (100x500x100: 38.15 MB)
 
 $ ls -ltrh *h5
--rw-r--r-- 1 angelv angelv 3.2K Feb 19 19:01 test1_rules.h5
--rw-r--r-- 1 angelv angelv 315K Feb 19 19:01 test1_std.h5
--rw-r--r-- 1 angelv angelv  17K Feb 19 19:01 test2_rules.h5
--rw-r--r-- 1 angelv angelv 1.1G Feb 19 19:02 test2_std.h5
--rw-r--r-- 1 angelv angelv 3.9M Feb 19 19:04 test3_rules.h5
--rw-r--r-- 1 angelv angelv  39M Feb 19 19:04 test3_std.h5
+-rw-r--r-- 1 angelv angelv 8.3K Feb 22 14:57 test1_rules.h5
+-rw-r--r-- 1 angelv angelv 315K Feb 22 14:57 test1_std.h5
+-rw-r--r-- 1 angelv angelv  20K Feb 22 14:57 test2_rules.h5
+-rw-r--r-- 1 angelv angelv 1.1G Feb 22 14:58 test2_std.h5
+-rw-r--r-- 1 angelv angelv 3.9M Feb 22 15:00 test3_rules.h5
+-rw-r--r-- 1 angelv angelv  39M Feb 22 15:00 test3_std.h5
+-rw-r--r-- 1 angelv angelv 203K Feb 22 15:00 test4_rules.h5
+-rw-r--r-- 1 angelv angelv  39M Feb 22 15:00 test4_std.h5
 #+END_SRC
 
 *** Test 1
@@ -138,31 +142,12 @@ In pseudo-code, this array could be created as:
 #+END_SRC
 
 The `test.py` array creates for this test an array with dimensions 4x100x100,
-and we can see the rules with:
+and we can see the rules with the following:
 
 #+BEGIN_SRC bash 
-$ h5dump -A test1_rules.h5
+$ h5dump -A test1_rules.h5 
 HDF5 "test1_rules.h5" {
 GROUP "/" {
-   ATTRIBUTE "d1" {
-      DATATYPE  H5T_IEEE_F64LE
-      DATASPACE  SIMPLE { ( 1, 3 ) / ( 1, 3 ) }
-      DATA {
-      (0,0): 1, 3, 0
-      }
-   }
-   ATTRIBUTE "d2" {
-      DATATYPE  H5T_IEEE_F64LE
-      DATASPACE  SIMPLE { ( 51, 5 ) / ( 51, 5 ) }
-      DATA {
-      (0,0): 0, 0, 50, 99, 1,
-      (1,0): 0, 0, 0, 0, 5,
-      (2,0): 0, 0, 1, 1, 4.91837,
-      [...]
-      (49,0): 0, 0, 48, 48, 1.08163,
-      (50,0): 0, 0, 49, 49, 1
-      }
-   }
    ATTRIBUTE "dims" {
       DATATYPE  H5T_STD_I32LE
       DATASPACE  SIMPLE { ( 3 ) / ( 3 ) }
@@ -170,12 +155,47 @@ GROUP "/" {
       (0): 4, 100, 100
       }
    }
+   ATTRIBUTE "order" {
+      DATATYPE  H5T_STD_I64LE
+      DATASPACE  SIMPLE { ( 3 ) / ( 3 ) }
+      DATA {
+      (0): 0, 1, 2
+      }
+   }
+   GROUP "dsets" {
+   }
+   GROUP "rules" {
+      DATASET "d1" {
+         DATATYPE  H5T_IEEE_F64LE
+         DATASPACE  SIMPLE { ( 1, 3 ) / ( 1, 3 ) }
+      }
+      DATASET "d2" {
+         DATATYPE  H5T_IEEE_F64LE
+         DATASPACE  SIMPLE { ( 51, 5 ) / ( 51, 5 ) }
+      }
+   }
 }
 }
+
+$ h5dump -d rules/d2 test1_rules.h5                                             
+HDF5 "test1_rules.h5" { 
+DATASET "rules/d2" {
+   DATATYPE  H5T_IEEE_F64LE
+   DATASPACE  SIMPLE { ( 51, 5 ) / ( 51, 5 ) }
+   DATA {                                                                                      
+   (0,0): 0, 0, 50, 99, 1,
+   (1,0): 0, 0, 0, 0, 5,
+   (2,0): 0, 0, 1, 1, 4.91837,
+   [...]
+   (49,0): 0, 0, 48, 48, 1.08163,
+   (50,0): 0, 0, 49, 49, 1       
+   }                                           
+}                                              
+}      
 #+END_SRC
 
 We can see that this array can be expressed only with d1 and d2 rules, without
-explicit sub-array datasets, so the rules-based file uses only 3 KB, while the
+explicit sub-array datasets, so the rules-based file uses only 8 KB, while the
 standard file takes 322 KB.
 
 
@@ -194,7 +214,7 @@ while the top 1/3 of the domain is set to a sin wave. In pseudo-code:
 
 By looking at the `test.py` script or the `test2_rules.h5` file created by it,
 we can see that this file can be created only with d2 rules, and since the
-created domain is very large (300x1200x400), the space saved is huge (17 KB as
+created domain is very large (300x1200x400), the space saved is huge (20 KB as
 compared to ~1 GB).
 
 #+caption: Test 2
@@ -216,21 +236,23 @@ sub-array *fits* within the large array (by giving the beginning and ending
 positions in the second dimension as the "d2" attribute).
 
 #+BEGIN_SRC bash 
-   DATASET "cylinder" {
-      DATATYPE  H5T_IEEE_F64LE
-      DATASPACE  SIMPLE { ( 100, 51, 100 ) / ( 100, 51, 100 ) }
-      ATTRIBUTE "d1" {
-         DATATYPE  H5T_STD_I64LE
-         DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
-         DATA {
-         (0): 0, 99
+   GROUP "dsets" {
+      DATASET "cylinder" {
+         DATATYPE  H5T_IEEE_F64LE
+         DATASPACE  SIMPLE { ( 100, 51, 100 ) / ( 100, 51, 100 ) }
+         ATTRIBUTE "d1" {
+            DATATYPE  H5T_STD_I64LE
+            DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+            DATA {
+            (0): 0, 99
+            }
          }
-      }
-      ATTRIBUTE "d2" {
-         DATATYPE  H5T_STD_I64LE
-         DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
-         DATA {
-         (0): 225, 275
+         ATTRIBUTE "d2" {
+            DATATYPE  H5T_STD_I64LE
+            DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+            DATA {
+            (0): 225, 275
+            }
          }
       }
    }
@@ -247,9 +269,64 @@ compared to 40 MB).
 [[file:Test_Files/test3.png]]
 
 
+*** Test 4
+
+This test is the same as Test 3, but in this case the *cylinder*'s orientation
+is changed, so that there is no variation in the third dimension (X axis in the
+image), and therefore it can be represented using only d2 rules, and therefore
+it is much more efficient memory-wise (200 KB for the rules-based file, as
+opposed to 4 MB in Test 3).
+
+This test illustrates the *order* option, which can be used to store the file
+(both in memory and in disk) more efficiently, but then the dimensions can be
+swapped at run-time, so that this files for Test 4 could be identical to having
+the file in Test 3 but using considerably less space. (NOTE: the Python script
+'test.py' does not do this run-time swapping, so that the file is saved as
+defined in the test4_rules.h5 file, with the cylinder oriented along the X
+Axis). 
 
 
+#+caption: Test 4
+[[file:Test_Files/test4.png]]
 
+We can see that this file only has "rules" and not "dsets" (i.e. dense
+sub-arrays), but its "order" attribute is [2,1,0], meaning that dimensions 0 and
+2 (X and Z in the image) are going to be swapped at run-time, so that this file
+will, in practice, represent the same file as Test 3.
+
+#+BEGIN_SRC bash 
+$ h5dump -A test4_rules.h5 
+HDF5 "test4_rules.h5" {
+GROUP "/" {
+   ATTRIBUTE "dims" {
+      DATATYPE  H5T_STD_I32LE
+      DATASPACE  SIMPLE { ( 3 ) / ( 3 ) }
+      DATA {
+      (0): 100, 500, 100
+      }
+   }
+   ATTRIBUTE "order" {
+      DATATYPE  H5T_STD_I64LE
+      DATASPACE  SIMPLE { ( 3 ) / ( 3 ) }
+      DATA {
+      (0): 2, 1, 0
+      }
+   }
+   GROUP "dsets" {
+   }
+   GROUP "rules" {
+      DATASET "d1" {
+         DATATYPE  H5T_IEEE_F64LE
+         DATASPACE  SIMPLE { ( 0 ) / ( 0 ) }
+      }
+      DATASET "d2" {
+         DATATYPE  H5T_IEEE_F64LE
+         DATASPACE  SIMPLE { ( 5102, 5 ) / ( 5102, 5 ) }
+      }
+   }
+}
+}
+#+END_SRC
 
 ** In-memory RBSLA (C code)
 
@@ -265,7 +342,7 @@ exist):
 
 #+BEGIN_SRC bash
 $ make clean
-$ make PP="-DVERF" 
+$ make PP=-DVERF
 $ ./rbsla 
 #+END_SRC 
 
@@ -276,12 +353,31 @@ that the C created files are bit-to-bit identical to the ones generated with
 Python by doing:
 
 #+BEGIN_SRC bash
-$ for i in `seq 1 3` ; do echo "Comparing $i" ; h5diff ../Test_Files/test${i}_std.h5 ../Test_Files/test${i}_std_C.h5 ; done
+for i in `seq 1 4` ; do echo "Comparing $i" ; h5diff ../Test_Files/test${i}_std.h5 ../Test_Files/test${i}_std_C.h5 ; done
 Comparing 1
 Comparing 2
 Comparing 3
+Comparing 4
+dataset: </data> and </data>
+302334 differences found
 $
 #+END_SRC 
+
+We can see that the output files for Test 4 are not identical, since as pointed
+above, the Python script ignores the 'order' attribute and writes the standard
+file AS-IS in the rules description, but by changing the order in Test 4 to
+[2,1,0], we are, in essence, dealing with the same file as in Test 3. The C code
+does take into account the 'order' attribute, and as such, the output from Test
+3 and Test 4 should be identical:
+
+#+BEGIN_SRC bash
+$ h5diff ../Test_Files/test3_std_C.h5 ../Test_Files/test4_std_C.h5 
+$ 
+#+END_SRC
+
+[If we want to ignore the 'order' attribute in the C code, we can compile it
+with make PP=VERFPython, in which case the output from the C code and the Python
+script are bit-to-bit identical in all cases].
 
 In order to create the standard array in the file, we allocate a complete dense
 array in memory, so if we profile the memory used by this code, we will not see
@@ -299,7 +395,7 @@ time (GNU Time) UNKNOWN
 Copyright (C) 2019 Free Software Foundation, Inc.
 #+END_SRC 
 
-If we compile the code with `make PP="-DVERF"` as above, we call the
+If we compile the code with `make PP=-DVERF` as above, we call the
 `write_regular_file` function, which allocates space to hold the complete dense
 arrays before writing them to a file. We can see that the maximum resident size (in
 KB) taken by this code is 1150608 (or ~1.2 GB),  which is roughly the size
@@ -307,8 +403,8 @@ required for the large array in Test 2:
 
 #+BEGIN_SRC bash
 $ /usr/bin/time -f "%M" ./rbsla
-Reading dataset: cylinder
-1150608
+[...]
+1150648
 #+END_SRC 
 
 
@@ -321,8 +417,8 @@ in this case, the rules-based representation can be done completely with rules).
 
 #+BEGIN_SRC bash
 $ /usr/bin/time -f "%M" ./rbsla
-Reading dataset: cylinder
-35968
+[...]
+35724
 #+END_SRC 
 
 *** Performance of RBSLA
@@ -332,7 +428,7 @@ structure, compile and run the code as follows:
 
 #+BEGIN_SRC bash
 $ make clean
-$ make PP="-DPERF" 
+$ make PP=-DPERF
 $ ./rbsla 
 #+END_SRC 
 
@@ -342,23 +438,35 @@ representation. Then, for each test, it will randomly select 100 million
 positions in the array and compute the sum of all those data points, timing
 it. As we can see below, for all the tests the "Dense" or "RBSLA" sum should be
 identical, and the penalty for storing these arrays as a RBSLA depends on the
-individual array and how they are repesented with the "d1" and "d2" rules. For
+individual array and how they are represented with the "d1" and "d2" rules. For
 these tests, the performance for RBSLA (as compared to a dense array
-representation) is: worse by ~2.5X in the Test #1; better by ~1.6X in Test #2;
-and about the same for Test #3.
+representation) is: worse by ~3.3X in the Test #1; better by ~1.22X in Test #2;
+and about the same for Tests #3 and #4.
 
 #+BEGIN_SRC bash
-$ ./rbsla
-## Starting Test #1. Dimensions: 4 100 100
-Dense array sum: 50012038.755090 (0.162883 seconds)
-RBSLA array sum: 50012038.755090 (0.405660 seconds)
+$ ./rbsla 
+## Starting Test #1.
+   Dimensions: 4 100 100
+   Order: 0 1 2
+Dense array sum: 50013153.204079 (0.148629 seconds)
+RBSLA array sum: 50013153.204079 (0.488789 seconds)
 
-## Starting Test #2. Dimensions: 300 1200 400
-Dense array sum: 6326.568886 (1.514259 seconds)
-RBSLA array sum: 6326.568886 (0.938391 seconds)
+## Starting Test #2.
+   Dimensions: 300 1200 400
+   Order: 0 1 2
+Dense array sum: 7542.830563 (1.555300 seconds)
+RBSLA array sum: 7542.830563 (1.280481 seconds)
 
-## Starting Test #3. Dimensions: 100 500 100
+## Starting Test #3.
+   Dimensions: 100 500 100
+   Order: 0 1 2
 Reading dataset: cylinder
-Dense array sum: 1307483.577778 (0.878563 seconds)
-RBSLA array sum: 1307483.577778 (0.797743 seconds)
+Dense array sum: 1310401.827402 (0.876437 seconds)
+RBSLA array sum: 1310401.827402 (1.070791 seconds)
+
+## Starting Test #4. 
+   Dimensions: 100 500 100
+   Order: 2 1 0
+Dense array sum: 1309704.530655 (0.881811 seconds)
+RBSLA array sum: 1309704.530655 (0.943334 seconds)
 #+END_SRC 

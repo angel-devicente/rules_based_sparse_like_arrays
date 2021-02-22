@@ -12,7 +12,8 @@ typedef struct r2 {
 } r2;
 
 typedef struct rba {
-  int d1,d2,d3;
+  int d1,d2,d3;   // dims
+  int o1,o2,o3;   // order
   int rd1, rd2;   // rd1 rules have 3 values, rd2 rules have 5 values
   r1 *rules_d1;
   r2 *rules_d2;
@@ -38,9 +39,10 @@ typedef struct strip3D {
 hid_t open_h5(const char *fname);
 void close_h5(hid_t f_id);
 void get_dims_h5(hid_t f_id, rba *a);
+void get_order_h5(hid_t f_id, rba *a);
 void get_rules(hid_t f_id, char *dname, rba *a);
 void populate_array(rba *Ar, strip3D *A, hid_t f_id);
-double val_array(int i1, int i2, int i3, strip3D *A);
-int performance_rbsla(strip3D *A, int *dims, long nhits);
+double val_array(int *ids, int* or, strip3D *A);
+int performance_rbsla(strip3D *A, int *dims, int* or,long nhits);
 
 #endif

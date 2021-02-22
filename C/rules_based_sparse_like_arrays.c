@@ -60,24 +60,44 @@ void get_dims_h5(hid_t f_id, rba *a) {
   a->d3 = i[2];
 }
 
-void get_rules(hid_t f_id, char *dname, rba *a) {
-  hid_t attr,aspace;
+void get_order_h5(hid_t f_id, rba *a) {
+  int i[3];
+
+  H5LTget_attribute_int(f_id, "/", "order", i);
+  a->o1 = i[0];
+  a->o2 = i[1];
+  a->o3 = i[2];
+
+#ifdef VERFPython
+  a->o1 = 0;
+  a->o2 = 1;
+  a->o3 = 2;
+#endif
+}
+
+
+void get_rules(hid_t loc_id, char *dname, rba *a) {
+  hid_t dset,aspace;
   herr_t ret;
   hsize_t sdim[2];
 
   double *m;
-  
-  attr = H5Aopen_name(f_id,dname);
-  aspace = H5Aget_space(attr);
-  ret = H5Sget_simple_extent_dims(aspace, sdim, NULL);
 
+  // get dimensions of dataset
+  dset = H5Dopen(loc_id,dname, H5P_DEFAULT);
+  aspace = H5Dget_space(dset);
+  ret = H5Sget_simple_extent_dims(aspace, sdim, NULL);
+  ret = H5Sclose(aspace);
+  ret = H5Dclose(dset);
+
+  
   if (! strcmp(dname,"d1")) {
     a->rd1 = (int)sdim[0];
     a->rules_d1 = malloc(sizeof(r1) * a->rd1);
     
     // create temp array for rules
     m = (double*)malloc(sizeof(double) * a->rd1 * R1_SIZE);
-    if (H5LTget_attribute_double( f_id, "/", "d1",  m) < 0) ERROR;
+    if (H5LTread_dataset_double( loc_id, "d1",  m) < 0) ERROR;
     for (int r = 0; r < a->rd1; r++) {
       a->rules_d1[r].d1s = (int)m[r * R1_SIZE];
       a->rules_d1[r].d1e = (int)m[r * R1_SIZE + 1];
@@ -91,7 +111,7 @@ void get_rules(hid_t f_id, char *dname, rba *a) {
     
     // create temp array for rules
     m = (double*)malloc(sizeof(double) * a->rd2 * R2_SIZE);
-    if (H5LTget_attribute_double( f_id, "/", "d2",  m) < 0) ERROR;
+    if (H5LTread_dataset_double( loc_id, "d2",  m) < 0) ERROR;
     for (int r = 0; r < a->rd2; r++) {
       a->rules_d2[r].d1s = (int)m[r * R2_SIZE];
       a->rules_d2[r].d1e = (int)m[r * R2_SIZE + 1];
@@ -106,8 +126,6 @@ void get_rules(hid_t f_id, char *dname, rba *a) {
     ERROR;
   }
   
-  ret = H5Sclose(aspace);
-  ret = H5Aclose(attr);
 }
 
 
@@ -172,7 +190,7 @@ void populate_array(rba *Ar, strip3D *A, hid_t f_id) {
   }
 
 
-  if (H5Giterate (f_id, "/", NULL, op_func, A)) printf("ERROR \n");
+  if (H5Giterate (f_id, "/dsets", NULL, op_func, A)) printf("ERROR \n");
 }
 
 
@@ -216,19 +234,21 @@ herr_t op_func (hid_t loc_id, const char *name, void *operator_data) {
 }
 
 
-void write_regular_file(strip3D *A, int *dims, const char *fname) {
+void write_regular_file(strip3D *A, int *dims, int *ord, const char *fname) {
   hid_t f_id;  
   double *m;
   int idxm;
+  int ids[3];
   
   m = (double*)malloc(sizeof(double) * (dims[0] * dims[1] * dims[2]));
 
   idxm = 0;
-  for (int idx1 = 0 ; idx1 < dims[0] ; idx1++) {
-    for (int idx2 = 0 ; idx2 < dims[1] ; idx2++) {
-      for (int idx3 = 0 ; idx3 < dims[2] ; idx3++) {
+  for (int idx1 = 0 ; idx1 < dims[ord[0]] ; idx1++) {
+    for (int idx2 = 0 ; idx2 < dims[ord[1]] ; idx2++) {
+      for (int idx3 = 0 ; idx3 < dims[ord[2]] ; idx3++) {
 	//	printf("Writing: %d %d %d %d \n",idx1,idx2,idx3,idxm);
-	m[idxm++] = val_array(idx1,idx2,idx3,A);
+	ids[0] = idx1 ; ids[1] = idx2 ; ids[2] = idx3;
+	m[idxm++] = val_array(ids,ord,A);
       }
     }
   }
@@ -242,17 +262,18 @@ void write_regular_file(strip3D *A, int *dims, const char *fname) {
 		      
 }
 
-double val_array(int i1, int i2, int i3, strip3D *A) {
-  if (A->s[i1].c) return *(A->s[i1].c);
-  if (A->s[i1].s[i2].c) return *(A->s[i1].s[i2].c);
-  return A->s[i1].s[i2].s[i3];
+double val_array(int *ids, int *ord, strip3D *A) {
+  if (A->s[ids[ord[0]]].c) return *(A->s[ids[ord[0]]].c);
+  if (A->s[ids[ord[0]]].s[ids[ord[1]]].c) return *(A->s[ids[ord[0]]].s[ids[ord[1]]].c);
+  return A->s[ids[ord[0]]].s[ids[ord[1]]].s[ids[ord[2]]];
 }
 
 
-int performance_rbsla(strip3D *A, int *dims, long nhits) {
+int performance_rbsla(strip3D *A, int *dims, int *or, long nhits) {
   double *A_d;
   long idxm;
   int *hits;
+  int ids[3];
   double sum;
 
   // timing
@@ -261,28 +282,29 @@ int performance_rbsla(strip3D *A, int *dims, long nhits) {
   
   // First, let's create the dense array
   A_d = (double*)malloc(sizeof(double) * (dims[0] * dims[1] * dims[2]));
-
+  
   idxm = 0;
-  for (int idx1 = 0 ; idx1 < dims[0] ; idx1++) {
-    for (int idx2 = 0 ; idx2 < dims[1] ; idx2++) {
-      for (int idx3 = 0 ; idx3 < dims[2] ; idx3++) {
+  for (int idx1 = 0 ; idx1 < dims[or[0]] ; idx1++) {
+    for (int idx2 = 0 ; idx2 < dims[or[1]] ; idx2++) {
+      for (int idx3 = 0 ; idx3 < dims[or[2]] ; idx3++) {
 	//	printf("Writing: %d %d %d %d \n",idx1,idx2,idx3,idxm);
-	A_d[idxm++] = val_array(idx1,idx2,idx3,A);
+	ids[0] = idx1 ; ids[1] = idx2 ; ids[2] = idx3;
+	A_d[idxm++] = val_array(ids,or,A);
       }
     }
   }
-
+  
   // Let's create a list of random points to access in the array
   hits = (int*)malloc(sizeof(int) * nhits * 3);
   srand(time(NULL));   // Initialization, should only be called once.
-
+  
   for (long idx = 0 ; idx < nhits ; idx++) {
     hits[3*idx]   = rand() % dims[0];
     hits[3*idx+1] = rand() % dims[1];
     hits[3*idx+2] = rand() % dims[2];
   }
-
-
+  
+  
   sum = 0;
   t1 = clock();
   for (long idx = 0 ; idx < nhits ; idx++) {
@@ -290,12 +312,13 @@ int performance_rbsla(strip3D *A, int *dims, long nhits) {
   }
   t2 = clock(); cpu_time = t2-t1;
   printf("Dense array sum: %10.6f (%f seconds)\n", sum, (double)cpu_time/CLOCKS_PER_SEC);
-
-
+  
+  
   sum = 0;
   t1 = clock();
   for (long idx = 0 ; idx < nhits ; idx++) {
-    sum += val_array(hits[3*idx],hits[3*idx+1],hits[3*idx+2],A);
+    ids[0] = hits[3*idx] ; ids[1] = hits[3*idx+1] ; ids[2] = hits[3*idx+2];
+    sum += val_array(ids,or,A);
   }
   t2 = clock(); cpu_time = t2-t1;
   printf("RBSLA array sum: %10.6f (%f seconds)\n\n", sum, (double)cpu_time/CLOCKS_PER_SEC);
