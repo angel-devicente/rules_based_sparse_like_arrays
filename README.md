@@ -1,24 +1,27 @@
 
 # Table of Contents
 
-1.  [Rules Based Sparse Like Arrays](#org2d5fd14)
-    1.  [Rules for 3D arrays](#org66d0898)
-        1.  [d1 rules](#orgf15ab59)
-        2.  [d2 rules](#org067817d)
-        3.  [Explicit data values](#orgd2d6c72)
-    2.  [Creating test arrays (\`Test\_Files/test.py\`)](#org4dff8cf)
-        1.  [Test 1](#org62faa16)
-        2.  [Test 2](#orgd09a2d0)
-        3.  [Test 3](#org5ad17d5)
-        4.  [Test 4](#org8934591)
-    3.  [In-memory RBSLA (C code)](#org56c8bd6)
-        1.  [Verification of correct implementation.](#org373cd06)
-        2.  [Verification of reduced memory size of RBSLA in-memory structure](#org1a1b30e)
-        3.  [Performance of RBSLA](#orgba21380)
+1.  [Rules Based Sparse Like Arrays](#org7075bc2)
+    1.  [Rules for 3D arrays](#org63e520b)
+        1.  [d1 rules](#orgb5f4c3a)
+        2.  [d2 rules](#orgaacf7ce)
+        3.  [Explicit data values](#org8fc4e5b)
+    2.  [Rules for 5D arrays](#orgb569b5d)
+    3.  [Creating test arrays (\`Test\_Files/test.py\`)](#org12ad440)
+        1.  [Test 1 (3D)](#orga489bfb)
+        2.  [Test 2 (3D)](#org12f5c07)
+        3.  [Test 3 (3D)](#org0f5d88a)
+        4.  [Test 4 (3D)](#orgcf2b1c0)
+        5.  [Test 5 (5D)](#org63426ad)
+        6.  [Test 6 (5D)](#orgc5747f9)
+    4.  [In-memory RBSLA (C code)](#org8f5d905)
+        1.  [Verification of correct implementation.](#orgd31ff92)
+        2.  [Verification of reduced memory size of RBSLA in-memory structure](#org38fda0f)
+        3.  [Performance of RBSLA](#org97945c2)
 
 
 
-<a id="org2d5fd14"></a>
+<a id="org7075bc2"></a>
 
 # Rules Based Sparse Like Arrays
 
@@ -39,16 +42,16 @@ magnitude less space and with no significant performance penalty**).
 (graphical explanation of the building up of the RBSLA to be added)
 
 
-<a id="org66d0898"></a>
+<a id="org63e520b"></a>
 
 ## Rules for 3D arrays
 
-In this version, the available rules to define RBSLA data are only two and are
+For 3D arrays, the available rules to define RBSLA data are only two and are
 very simple. The test arrays created with the \`test.py\` script should help to
 clarify how these rules are used.
 
 
-<a id="orgf15ab59"></a>
+<a id="orgb5f4c3a"></a>
 
 ### d1 rules
 
@@ -80,7 +83,7 @@ would be given by the d1 rules
     2 5 2.0
 
 
-<a id="org067817d"></a>
+<a id="orgaacf7ce"></a>
 
 ### d2 rules
 
@@ -102,49 +105,67 @@ would be given by the d2 rules
     2 5 3 9 2.0
 
 
-<a id="orgd2d6c72"></a>
+<a id="org8fc4e5b"></a>
 
 ### Explicit data values
 
 For those values that cannot be represented with the above rules, we provide
-as many dense sub-arrays as necessary, where we also specify the location where
+as many 3D dense sub-arrays as necessary, where we also specify the location where
 the sub-array fits in the main array. 
 
 
-<a id="org4dff8cf"></a>
+<a id="orgb569b5d"></a>
+
+## Rules for 5D arrays
+
+For 5D arrays, the available rules to define RBSLA data are four and follow the
+same idea as for the 3D arrays above, but the rules extend to four levels
+(i.e. d1, d2, d3 and d4 rules), while the explicit data values are represented
+by 5D dense sub-arrays. 
+
+
+<a id="org12ad440"></a>
 
 ## Creating test arrays (\`Test\_Files/test.py\`)
 
-The Python script \`test.py\` creates three "rules-based" and "standard" arrays,
-storing them in HDF5 format. As we can see below, the size of the "rules-based"
-files (\`testX\_rules.h5\`) is much smaller than the "standard" files
-(\`testX\_std.h5\`). How much smaller depends on how efficiently the rules format
-(explained below) can represent the data of interest.
+The Python script \`test.py\` creates six "rules-based" and "standard" arrays
+(four in 3D, two in 5D), storing them in HDF5 format. As we can see below, the
+size of the "rules-based" files (\`testX\_rules.h5\`) is much smaller than the
+"standard" files (\`testX\_std.h5\`). How much smaller depends on how efficiently
+the rules format (explained below) can represent the data of interest.
 
     $ ./test.py
-    Creating rules-based file for test1 (4x100x100)
-    Creating starndard file for test1 (4x100x100:  0.31 MB)
-    Creating rules-based file for test2 (300x1200x400)
-    Creating starndard file for test2 (300x1200x400: 1098.63 MB)
-    Creating rules-based file for test3 (100x500x100)
-    Creating starndard file for test3 (100x500x100: 38.15 MB)
-    Creating rules-based file for test4 (100x500x100)
-    Creating starndard file for test4 (100x500x100: 38.15 MB)
+    Creating a 3D rules-based file for test1 ([4, 100, 100])
+    Creating a 3D standard file for test1 ([4, 100, 100]:  0.31 MB)
+    Creating a 3D rules-based file for test2 ([300, 1200, 400])
+    Creating a 3D standard file for test2 ([300, 1200, 400]: 1098.63 MB)
+    Creating a 3D rules-based file for test3 ([100, 500, 100])
+    Creating a 3D standard file for test3 ([100, 500, 100]: 38.15 MB)
+    Creating a 3D rules-based file for test4 ([100, 500, 100])
+    Creating a 3D standard file for test4 ([100, 500, 100]: 38.15 MB)
+    Creating a 5D rules-based file for test5 ([4, 20, 10, 15, 25])
+    Creating a 5D standard file for test5 ([4, 20, 10, 15, 25]:  2.29 MB)
+    Creating a 5D rules-based file for test6 ([4, 100, 36, 150, 150])
+    Creating a 5D standard file for test6 ([4, 100, 36, 150, 150]: 2471.92 MB)
     
     $ ls -ltrh *h5
-    -rw-r--r-- 1 angelv angelv 8.3K Feb 22 14:57 test1_rules.h5
-    -rw-r--r-- 1 angelv angelv 315K Feb 22 14:57 test1_std.h5
-    -rw-r--r-- 1 angelv angelv  20K Feb 22 14:57 test2_rules.h5
-    -rw-r--r-- 1 angelv angelv 1.1G Feb 22 14:58 test2_std.h5
-    -rw-r--r-- 1 angelv angelv 3.9M Feb 22 15:00 test3_rules.h5
-    -rw-r--r-- 1 angelv angelv  39M Feb 22 15:00 test3_std.h5
-    -rw-r--r-- 1 angelv angelv 203K Feb 22 15:00 test4_rules.h5
-    -rw-r--r-- 1 angelv angelv  39M Feb 22 15:00 test4_std.h5
+    -rw-r--r-- 1 angelv angelv 8.4K May  1 08:18 test1_rules.h5
+    -rw-r--r-- 1 angelv angelv 315K May  1 08:18 test1_std.h5
+    -rw-r--r-- 1 angelv angelv  20K May  1 08:18 test2_rules.h5
+    -rw-r--r-- 1 angelv angelv 1.1G May  1 08:19 test2_std.h5
+    -rw-r--r-- 1 angelv angelv 3.9M May  1 08:21 test3_rules.h5
+    -rw-r--r-- 1 angelv angelv  39M May  1 08:21 test3_std.h5
+    -rw-r--r-- 1 angelv angelv 203K May  1 08:21 test4_rules.h5
+    -rw-r--r-- 1 angelv angelv  39M May  1 08:21 test4_std.h5
+    -rw-r--r-- 1 angelv angelv 6.2K May  1 08:21 test5_rules.h5
+    -rw-r--r-- 1 angelv angelv 2.3M May  1 08:21 test5_std.h5
+    -rw-r--r-- 1 angelv angelv 8.6M May  1 08:21 test6_rules.h5
+    -rw-r--r-- 1 angelv angelv 2.5G May  1 08:22 test6_std.h5
 
 
-<a id="org62faa16"></a>
+<a id="orga489bfb"></a>
 
-### Test 1
+### Test 1 (3D)
 
 In this first test, all the planes (except for the first one) in the array first
 dimension (Z axis in the image below) are set to 0. In the first plane, the
@@ -152,7 +173,9 @@ values in the second dimension (Y axis in the image) range from 5 at the bottom
 to 1 at the center, and are set to 1 in the top half, while being constant for
 the third dimension (X axis in the image).
 
-In pseudo-code, this array could be created as:
+In pseudo-code, this array could be created as (\*\*note that the ranges below
+represent inclusive indices, so for example a (0,0) range means the index 0, not
+as in the Python way\*\*):
 
     a[1:,:,:] = 0
     a[0,0:half_d2,:] = linspace(5,1)
@@ -216,9 +239,9 @@ standard file takes 322 KB.
 ![img](Test_Files/test1.png "Test 1")
 
 
-<a id="orgd09a2d0"></a>
+<a id="org12f5c07"></a>
 
-### Test 2
+### Test 2 (3D)
 
 In the second test, the bottom 2/3 of the domain is set to 0 for all depths,
 while the top 1/3 of the domain is set to a sin wave. In pseudo-code:
@@ -234,9 +257,9 @@ compared to ~1 GB).
 ![img](Test_Files/test2.png "Test 2")
 
 
-<a id="org5ad17d5"></a>
+<a id="org0f5d88a"></a>
 
-### Test 3
+### Test 3 (3D)
 
 In the third test, all the domain is set to 0, except for a **cylinder** that goes
 from the front to the back of the domain, with values for the **cylinder** ranging
@@ -282,9 +305,9 @@ compared to 40 MB).
 ![img](Test_Files/test3.png "Test 3")
 
 
-<a id="org8934591"></a>
+<a id="orgcf2b1c0"></a>
 
-### Test 4
+### Test 4 (3D)
 
 This test is the same as Test 3, but in this case the **cylinder**'s orientation
 is changed, so that there is no variation in the third dimension (X axis in the
@@ -340,7 +363,141 @@ will, in practice, represent the same file as Test 3.
     }
 
 
-<a id="org56c8bd6"></a>
+<a id="org63426ad"></a>
+
+### Test 5 (5D)
+
+This test is similar to Test #1, but extended to 5D. All the "planes" (except
+for the first one) in the array first dimension are set to 0. In the first
+"plane", the values in the second dimension are set to 1 in the top half. 
+
+For the points in the first "plane", and for values in the second dimension in
+the bottom half, the values vary along the third dimension from 5 to 1 (in the
+first half of the third dimension) and from 1 to 5 (in the second half of the
+third dimension). It is probably easier to see it in pseudo-code:
+
+    a[1:,:,:,:,:] = 0
+    a[0,d2//2:,:,:,:] =  1
+    a[0,0:d2//2,0:d3//3,:,:] = linspace(5,1)
+    a[0,0:d2//2,d3//3:,:,:] = linspace(1,5)
+
+The \`test.py\` array creates for this test an array with dimensions 4x20x10x15x25,
+and we can see the rules with the following:
+
+    h5dump -A test5_rules.h5 
+    HDF5 "test5_rules.h5" {
+    GROUP "/" {
+       ATTRIBUTE "dims" {
+          DATATYPE  H5T_STD_I32LE
+          DATASPACE  SIMPLE { ( 5 ) / ( 5 ) }
+          DATA {
+          (0): 4, 20, 10, 15, 25
+          }
+       }
+       ATTRIBUTE "ndims" {
+          DATATYPE  H5T_STD_I64LE
+          DATASPACE  SCALAR
+          DATA {
+          (0): 5
+          }
+       }
+       ATTRIBUTE "order" {
+          DATATYPE  H5T_STD_I64LE
+          DATASPACE  SIMPLE { ( 5 ) / ( 5 ) }
+          DATA {
+          (0): 0, 1, 2, 3, 4
+          }
+       }
+       GROUP "dsets" {
+       }
+       GROUP "rules" {
+          DATASET "d1" {
+    	 DATATYPE  H5T_IEEE_F64LE
+    	 DATASPACE  SIMPLE { ( 1, 3 ) / ( 1, 3 ) }
+          }
+          DATASET "d2" {
+    	 DATATYPE  H5T_IEEE_F64LE
+    	 DATASPACE  SIMPLE { ( 1, 5 ) / ( 1, 5 ) }
+          }
+          DATASET "d3" {
+    	 DATATYPE  H5T_IEEE_F64LE
+    	 DATASPACE  SIMPLE { ( 10, 7 ) / ( 10, 7 ) }
+          }
+          DATASET "d4" {
+    	 DATATYPE  H5T_IEEE_F64LE
+    	 DATASPACE  SIMPLE { ( 0 ) / ( 0 ) }
+          }
+       }
+    }
+    }
+    
+    h5dump -d rules/d3 test5_rules.h5  
+    HDF5 "test5_rules.h5" {
+    DATASET "rules/d3" {
+       DATATYPE  H5T_IEEE_F64LE
+       DATASPACE  SIMPLE { ( 10, 7 ) / ( 10, 7 ) }
+       DATA {
+       (0,0): 0, 0, 0, 9, 0, 0, 5,
+       (1,0): 0, 0, 0, 9, 1, 1, 4,
+       (2,0): 0, 0, 0, 9, 2, 2, 3,
+       [...]
+       (8,0): 0, 0, 0, 9, 8, 8, 4,
+       (9,0): 0, 0, 0, 9, 9, 9, 5
+       }
+    }
+    }
+
+
+<a id="orgc5747f9"></a>
+
+### Test 6 (5D)
+
+This test is the same as Test #5, but much larger in size, and in the last
+points in dimension #3 where we previously had the values degradation, we now
+have some random data, specified with the "random\_data" 5D dense dataset.
+
+Thus, in pseudo-code, this would be:
+
+    a[1:,:,:,:,:] = 0
+    a[0,d2//2:,:,:,:] =  1
+    a[0,0:d2//2,0:d3//3,:,:] = linspace(5,1)
+    a[0,0:d2//2,d3//3:d3-1,:,:] = linspace(1,5)
+    a[0,0:d2//2,d3,:,:] = random_data
+
+We can now see that the \`test.py\` array creates for this test an array with
+dimensions 4x100x36x150x150, and we can see that a 1x50x1x150x150 5D dense
+dataset \`random\_data\` was created, with the attributes \`d1\`, \`d2\`,
+etc. specifying where this sub-array fits in the global array:
+
+    h5dump -A test6_rules.h5
+    HDF5 "test6_rules.h5" {
+    GROUP "/" {
+       ATTRIBUTE "dims" {
+          DATATYPE  H5T_STD_I32LE
+          DATASPACE  SIMPLE { ( 5 ) / ( 5 ) }
+          DATA {
+          (0): 4, 100, 36, 150, 150
+          }
+       }
+    
+    [...]
+    
+       GROUP "dsets" {                                                                      
+          DATASET "random_data" {
+    	 DATATYPE  H5T_IEEE_F64LE
+    	 DATASPACE  SIMPLE { ( 1, 50, 1, 150, 150 ) / ( 1, 50, 1, 150, 150 ) }
+    	 ATTRIBUTE "d1" {
+    	    DATATYPE  H5T_STD_I64LE                                                     
+    	    DATASPACE  SIMPLE { ( 2 ) / ( 2 ) }
+    	    DATA {
+    	    (0): 0, 0
+    	    }
+    	 }
+    
+    [...]
+
+
+<a id="org8f5d905"></a>
 
 ## In-memory RBSLA (C code)
 
@@ -348,7 +505,7 @@ In directory \`C\` we have the C code to read these rule-based arrays and create
 an efficient in-memory representation of these RBSLA arrays.
 
 
-<a id="org373cd06"></a>
+<a id="orgd31ff92"></a>
 
 ### Verification of correct implementation.
 
@@ -367,14 +524,15 @@ storing the data in the RBSLA in-memory structure, it will create also in
 that the C created files are bit-to-bit identical to the ones generated with
 Python by doing:
 
-    for i in `seq 1 4` ; do echo "Comparing $i" ; h5diff ../Test_Files/test${i}_std.h5 ../Test_Files/test${i}_std_C.h5 ; done
+    for i in `seq 1 6` ; do echo "Comparing $i" ; h5diff ../Test_Files/test${i}_std.h5 ../Test_Files/test${i}_std_C.h5 ; done
     Comparing 1
     Comparing 2
     Comparing 3
     Comparing 4
     dataset: </data> and </data>
     302334 differences found
-    $
+    Comparing 5
+    Comparing 6
 
 We can see that the output files for Test 4 are not identical, since as pointed
 above, the Python script ignores the 'order' attribute and writes the standard
@@ -388,14 +546,14 @@ does take into account the 'order' attribute, and as such, the output from Test
 
 [If we want to ignore the 'order' attribute in the C code, we can compile it
 with make PP=VERFPython, in which case the output from the C code and the Python
-script are bit-to-bit identical in all cases].
+script are bit-to-bit identical in all cases].  THIS SEGFFAULTs now, CHECK!
 
 In order to create the standard array in the file, we allocate a complete dense
 array in memory, so if we profile the memory used by this code, we will not see
 the memory savings as compared to a standard dense array implementation.
 
 
-<a id="org1a1b30e"></a>
+<a id="org38fda0f"></a>
 
 ### Verification of reduced memory size of RBSLA in-memory structure
 
@@ -410,26 +568,27 @@ in \`/usr/bin/time\`:
 If we compile the code with \`make PP=-DVERF\` as above, we call the
 \`write\_regular\_file\` function, which allocates space to hold the complete dense
 arrays before writing them to a file. We can see that the maximum resident size (in
-KB) taken by this code is 1150608 (or ~1.2 GB),  which is roughly the size
-required for the large array in Test 2:
+KB) taken by this code is 2556780 (or ~2.5 GB),  which is roughly the size
+required for the large array in Test 6:
 
     $ /usr/bin/time -f "%M" ./rbsla
     [...]
-    1150648
+    2556780
 
 If we compile the code with only \`make\`, the code also (for each test) reads the
 rules-based file and stores the data in the RBSLA in-memory structure, but does
 not call \`write\_regular\_file\`, and thus the space for the complete dense array
 is not allocated. We can see that in this case the maximum resident size is only
-~36MB, saving ~1.1 GB (basically the full size needed for the large Test 2, as
-in this case, the rules-based representation can be done completely with rules). 
+~34MB, saving ~2.5 GB (basically the full size needed for the large Test 6, as
+in this case, the rules-based representation can be done almost completely with
+rules, except for a small dense sub-array).
 
     $ /usr/bin/time -f "%M" ./rbsla
     [...]
-    35724
+    34392
 
 
-<a id="orgba21380"></a>
+<a id="org97945c2"></a>
 
 ### Performance of RBSLA
 
@@ -446,34 +605,47 @@ representation. Then, for each test, it will randomly select 100 million
 positions in the array and compute the sum of all those data points, timing
 it. As we can see below, for all the tests the "Dense" or "RBSLA" sum should be
 identical, and the penalty for storing these arrays as a RBSLA depends on the
-individual array and how they are represented with the "d1" and "d2" rules. For
+individual array and how they are represented with the "dX" rules. For
 these tests, the performance for RBSLA (as compared to a dense array
-representation) is: worse by ~3.3X in the Test #1; better by ~1.22X in Test #2;
-and about the same for Tests #3 and #4.
+representation) is: worse by ~3.3X in the Test #1; better by ~3.3X in Test #6;
+and about the same for the other tests.
 
     $ ./rbsla 
     ## Starting Test #1.
        Dimensions: 4 100 100
        Order: 0 1 2
-    Dense array sum: 50013153.204079 (0.148629 seconds)
-    RBSLA array sum: 50013153.204079 (0.488789 seconds)
+    Dense array sum: 50015937.775508 (0.150176 seconds)
+    RBSLA array sum: 50015937.775508 (0.444583 seconds)
     
     ## Starting Test #2.
        Dimensions: 300 1200 400
        Order: 0 1 2
-    Dense array sum: 7542.830563 (1.555300 seconds)
-    RBSLA array sum: 7542.830563 (1.280481 seconds)
+    Dense array sum: 429.716147 (1.564981 seconds)
+    RBSLA array sum: 429.716147 (1.622543 seconds)
     
     ## Starting Test #3.
        Dimensions: 100 500 100
        Order: 0 1 2
     Reading dataset: cylinder
-    Dense array sum: 1310401.827402 (0.876437 seconds)
-    RBSLA array sum: 1310401.827402 (1.070791 seconds)
+    Dense array sum: 1309124.994801 (0.933819 seconds)
+    RBSLA array sum: 1309124.994801 (1.135102 seconds)
     
     ## Starting Test #4. 
        Dimensions: 100 500 100
        Order: 2 1 0
-    Dense array sum: 1309704.530655 (0.881811 seconds)
-    RBSLA array sum: 1309704.530655 (0.943334 seconds)
+    Dense array sum: 1307520.575575 (0.948381 seconds)
+    RBSLA array sum: 1307520.575575 (1.035728 seconds)
+    
+    ## Starting Test #5.
+       Dimensions: 4 20 10 15 25
+       Order: 0 1 2 3 4
+    Dense array sum: 50016408.000000 (0.662880 seconds)
+    RBSLA array sum: 50016408.000000 (0.591477 seconds)
+    
+    ## Starting Test #6.
+       Dimensions: 4 100 36 150 150
+       Order: 0 1 2 3 4
+    Reading dataset: random_data
+    Dense array sum: 48967706.129324 (2.027363 seconds)
+    RBSLA array sum: 48967706.129324 (0.612702 seconds)
 
