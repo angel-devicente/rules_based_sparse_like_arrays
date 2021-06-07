@@ -9,60 +9,74 @@ import numpy as np
 # d3 rules: d1_s, d1_e, d2_s, d2_e, d3_s, d3_e, val
 # d4 rules: d1_s, d1_e, d2_s, d2_e, d3_s, d3_e, d4_s, d4_e, val
 
-def main():
+def main(test=-1):
 
     # 3D tests
-    
+
     # Test 1 sample
     # -------------
-    dims = [4,100,100]
-    print(f'Creating a {len(dims)}D rules-based file for test1 ({dims})')
-    test1(dims,"test1_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test1 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test1_rules.h5","test1_std.h5")
+    if test == -1 or test == 1:  
+        dims = [4,100,100]
+        print(f'Creating a {len(dims)}D rules-based file for test1 ({dims})')
+        test1(dims,"test1_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test1 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test1_rules.h5","test1_std.h5")
     
     # Test 2 sample
     # -------------
-    dims = [300,1200,400]
-    print(f'Creating a {len(dims)}D rules-based file for test2 ({dims})')
-    test2(dims,"test2_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test2 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test2_rules.h5","test2_std.h5")
+    if test == -1 or test == 2:    
+        dims = [300,1200,400]
+        print(f'Creating a {len(dims)}D rules-based file for test2 ({dims})')
+        test2(dims,"test2_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test2 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test2_rules.h5","test2_std.h5")
     
     # Test 3 sample
     # -------------
-    dims = [100,500,100]
-    print(f'Creating a {len(dims)}D rules-based file for test3 ({dims})')
-    test3(dims,"test3_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test3 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test3_rules.h5","test3_std.h5")
+    if test == -1 or test == 3:  
+        dims = [100,500,100]
+        print(f'Creating a {len(dims)}D rules-based file for test3 ({dims})')
+        test3(dims,"test3_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test3 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test3_rules.h5","test3_std.h5")
     
     # Test 4 sample
     # -------------
-    dims = [100,500,100]
-    print(f'Creating a {len(dims)}D rules-based file for test4 ({dims})')
-    test4(dims,"test4_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test4 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test4_rules.h5","test4_std.h5")
+    if test == -1 or test == 4:      
+        dims = [100,500,100]
+        print(f'Creating a {len(dims)}D rules-based file for test4 ({dims})')
+        test4(dims,"test4_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test4 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test4_rules.h5","test4_std.h5")
 
     # 5D tests
     
     # Test 5 sample 
     # -------------
-    dims = [4,20,10,15,25]
-    print(f'Creating a {len(dims)}D rules-based file for test5 ({dims})')
-    test5(dims,"test5_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test5 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test5_rules.h5","test5_std.h5")
+    if test == -1 or test == 5:      
+        dims = [4,20,10,15,25]
+        print(f'Creating a {len(dims)}D rules-based file for test5 ({dims})')
+        test5(dims,"test5_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test5 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test5_rules.h5","test5_std.h5")
 
     # Test 6 sample 
     # -------------
-    dims = [4,100,36,150,150]
-    print(f'Creating a {len(dims)}D rules-based file for test6 ({dims})')
-    test6(dims,"test6_rules.h5")
-    print(f'Creating a {len(dims)}D standard file for test6 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
-    write_regular_file("test6_rules.h5","test6_std.h5")
+    if test == -1 or test == 6:      
+        dims = [4,100,36,150,150]
+        print(f'Creating a {len(dims)}D rules-based file for test6 ({dims})')
+        test6(dims,"test6_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test6 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test6_rules.h5","test6_std.h5")
     
+    # Test 7 sample 
+    # -------------
+    if test == -1 or test == 7:
+        dims = [10,100,100,1,1]
+        print(f'Creating a {len(dims)}D rules-based file for test7 ({dims})')
+        test7(dims,"test7_rules.h5")
+        print(f'Creating a {len(dims)}D standard file for test7 ({dims}: {(np.prod(dims)*8)/(1024*1024):5.2f} MB)')
+        write_regular_file("test7_rules.h5","test7_std.h5")
 
 
 def test1(dims,fout):
@@ -273,7 +287,43 @@ def test6(dims,fout):
     f['dsets/random_data'].attrs['d5'] = (0,d5-1)
     
     f.close()
+
     
+def test7(dims,fout):
+    """This test represents a 3d model levitating over the sun close
+    enough to the surface to consider the solar surface as an infinite
+    plane.  This implies that all the faces of the 3d object
+    (excepting the above one) receive the same radiation in function
+    of the angle, frequency and polarization state. But, to simplify
+    the test we consider only intensity at one wavelength (5000A).
+    Then, we only have the variation of the intensity with the
+    incident angle on the faces. Considering the values on Allen (1973),
+    Table 14.16 at wvl=0.5um, we have 10 different angles.
+    
+    The dimensions of the file would be (in this order): 
+    [Ndir, Nxyz, Nxyz, Nfreq, Nstokes] = [10, Nxyz, Nxyz, 1, 1]
+    Directions: cos(inclination) = [1.0,0.8,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.02]
+    Intensity: I = [1.0,0.877,0.744,0.675,0.599,0.513,0.425,0.323,0.26,0.19]
+    """
+
+    intensity = [1.0,0.877,0.744,0.675,0.599,0.513,0.425,0.323,0.26,0.19]
+    
+    d1,d2,d3,d4,d5 = dims
+    ndims = 5
+    
+    f = h5py.File(fout,'w')
+    f.create_group("dsets")
+    f.attrs['ndims'] = ndims
+    f.attrs['dims'] = np.array([d1,d2,d3,d4,d5],dtype=np.int32)
+    f.attrs['order'] = [0,1,2,3,4]
+    
+    d1_rules = [(ii,ii,intensity[ii]) for ii in range(d1)]
+    f['rules/d1'] = d1_rules
+    f['rules/d2'] = []
+    f['rules/d3'] = []
+    f['rules/d4'] = []
+    f.close()
+
     
 def write_regular_file(frules,fstd):
     f = h5py.File(frules,'r')
@@ -356,4 +406,15 @@ def write_regular_file_5D(f,fc):
         
     
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--test", type=int, help="individual test to perforf (-1 for all tests [default])")
+    args = parser.parse_args()
+
+    if args.test == -1 or args.test == None:
+        main()
+    else:
+        main(test=args.test)
+    
+
